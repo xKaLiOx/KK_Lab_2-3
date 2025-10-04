@@ -2,6 +2,8 @@
   "name": "Python Debugger: Attach",
   "type": "debugpy",
   "request": "attach",
+  "stopOnEntry": true,
+  "justMyCode": false,
   "connect": {
     "host": "localhost",
     "port": 5678
