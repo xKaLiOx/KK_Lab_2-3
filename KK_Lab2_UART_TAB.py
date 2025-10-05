@@ -35,16 +35,16 @@ def com_port_list_update(port_options):
 def com_port_settings(root):
     
     myWindow_uart_settings = tk.Toplevel(root)
-    myWindow_uart_settings.geometry("200x600")
+    #myWindow_uart_settings.geometry("200x600")
     myWindow_uart_settings.resizable(False, False)
     myWindow_uart_settings.title("UART settings")
+    myWindow_uart_settings.iconbitmap("icon.ico")
 
     screen_width = myWindow_uart_settings.winfo_screenwidth()
     screen_height = myWindow_uart_settings.winfo_screenheight()
     x_cordinate = int((screen_width/2) - (WINDOW_WIDTH/2))
     y_cordinate = int((screen_height/2) - (WINDOW_HEIGHT/2))
     myWindow_uart_settings.geometry("{}x{}+{}+{}".format(WINDOW_WIDTH, WINDOW_HEIGHT, x_cordinate, y_cordinate))
-    myWindow_uart_settings.iconbitmap("icon.ico")
     
     #update port list
     com_port_list_update(port_options)

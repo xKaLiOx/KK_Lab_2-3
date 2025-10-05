@@ -5,6 +5,8 @@ Port_connected = False
 serialPort  = serial.Serial()
 
 myFontMain = ("Times New Roman", 12)
+myFontBiggest = ("Times New Roman", 18,'bold')
+myFontMid = ("Times New Roman", 15,'bold')
 
 
 selected_port = " "
