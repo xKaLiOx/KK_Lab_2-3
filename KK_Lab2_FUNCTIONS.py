@@ -1,10 +1,12 @@
 import tkinter as tk
 import tkinter.messagebox as messagebox
+import matplotlib
+import numpy as np
 
 import KK_Lab2_GLOBALS as globals
 
 
-def COM_port_Open_Close(button,label,root,textbox,fix,time,satellites,HDOP):
+def COM_port_Open_Close(button,label,root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH):
     if globals.Port_connected == False:
         try:
             globals.serialPort.baudrate = globals.selected_baud_rate
@@ -20,7 +22,7 @@ def COM_port_Open_Close(button,label,root,textbox,fix,time,satellites,HDOP):
             label['background'] = "green"
             label['text'] = "OPEN"
             globals.Port_connected = True
-            root.after(10, lambda:COM_port_read_data(root,textbox,fix,time,satellites,HDOP))#start reading
+            root.after(10, lambda:COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH))#start reading
         except Exception as e:
             tk.messagebox.showerror("ERROR", f"Port can't be opened: {e}")
             label['background'] = "red"
@@ -46,7 +48,7 @@ def GUI_Exit(root):
     if exit_msg:
         root.destroy()
         
-def COM_port_read_data(root,textbox,fix,time,satellites,HDOP):
+def COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH):
     if globals.Port_connected:
         if globals.serialPort.in_waiting:
             try:
@@ -54,17 +56,23 @@ def COM_port_read_data(root,textbox,fix,time,satellites,HDOP):
                 if data:
                     string_data = data.decode('ascii')
                     com_port_log_data(string_data,textbox)
-                    com_port_display_data(string_data,fix,time,satellites,HDOP)
+                    com_port_display_data(string_data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH)
             except Exception as e:
                 log_msg = f"Error reading data: {e}\n"
                 com_port_log_data(log_msg,textbox)
-        root.after(10, lambda: COM_port_read_data(root,textbox,fix,time,satellites,HDOP))#blocking every 10 ms while port open
+        root.after(10, lambda: COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH))#blocking every 10 ms while port open
     else: root.after_cancel(COM_port_read_data)
       
-def com_port_log_clear(textbox):
+def com_port_log_clear(textbox,temp_graph,press_graph,canvas):#clear logs,graph and index
     textbox['state'] = 'normal'
     textbox.delete(1.0, tk.END)
     textbox['state'] = 'disabled'
+    globals.myGraphIndex = 0
+    temp_graph.clear()
+    press_graph.clear()
+    canvas.draw()
+    globals.serialPort.reset_input_buffer()
+    
     
 def com_port_log_data(data,textbox):
     textbox['state'] = 'normal'
@@ -75,7 +83,7 @@ def com_port_log_data(data,textbox):
     textbox.see(tk.END)
     textbox['state'] = 'disabled'
     
-def com_port_display_data(data,fix,time,satellites,HDOP):
+def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH):
     #split data by commands
     if data.startswith("$PNLBLPS"):
         #command, pressure 1.1f, tempeature 1.1f, checksum
@@ -83,6 +91,20 @@ def com_port_display_data(data,fix,time,satellites,HDOP):
         pressure = float(splitted_data[1])
         temperature = float(splitted_data[2])
         checksum = splitted_data[3].strip() #remove \r\n end
+        
+        globals.Temp_array.append(temperature)
+        globals.Press_array.append(pressure)
+        #TEMP_AXIS.scatter(globals.myGraphIndex,temperature) slow circular buffer
+        #PRESS_AXIS.scatter(globals.myGraphIndex,pressure)
+        TEMP_AXIS.plot(globals.myGraphIndex,temperature)
+        PRESS_AXIS.plot(globals.myGraphIndex,pressure)
+        TEMP_AXIS.set_xlim()
+        if(globals.myGraphIndex-globals.Graph_shift_size > 0):
+            TEMP_AXIS.set_xlim(globals.myGraphIndex-globals.Graph_shift_size,globals.myGraphIndex)
+        else:
+            TEMP_AXIS.set_xlim(0,globals.myGraphIndex)
+        globals.myGraphIndex +=1
+        GRAPH.draw()
         
         
     #fix,latitude(DMS),NS,longtitude(DMS),EW,UTC+3,satellites,HDOP,checksum
