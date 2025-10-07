@@ -68,6 +68,9 @@ def com_port_log_clear(textbox,temp_graph,press_graph,canvas):#clear logs,graph 
     textbox.delete(1.0, tk.END)
     textbox['state'] = 'disabled'
     globals.myGraphIndex = 0
+    globals.Press_array = []
+    globals.Temp_array = []
+    globals.myGraphIndexArray = []
     temp_graph.clear()
     press_graph.clear()
     canvas.draw()
@@ -83,8 +86,7 @@ def com_port_log_data(data,textbox):
     textbox.see(tk.END)
     textbox['state'] = 'disabled'
     
-def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH):
-    #split data by commands
+def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,CANVAS):
     if data.startswith("$PNLBLPS"):
         #command, pressure 1.1f, tempeature 1.1f, checksum
         splitted_data = data.split(',')
@@ -94,17 +96,19 @@ def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRA
         
         globals.Temp_array.append(temperature)
         globals.Press_array.append(pressure)
-        #TEMP_AXIS.scatter(globals.myGraphIndex,temperature) slow circular buffer
-        #PRESS_AXIS.scatter(globals.myGraphIndex,pressure)
-        TEMP_AXIS.plot(globals.myGraphIndex,temperature)
-        PRESS_AXIS.plot(globals.myGraphIndex,pressure)
-        TEMP_AXIS.set_xlim()
-        if(globals.myGraphIndex-globals.Graph_shift_size > 0):
-            TEMP_AXIS.set_xlim(globals.myGraphIndex-globals.Graph_shift_size,globals.myGraphIndex)
-        else:
-            TEMP_AXIS.set_xlim(0,globals.myGraphIndex)
+        globals.myGraphIndexArray.append(globals.myGraphIndex)
+        
+        globals.Temp_array = globals.Temp_array[-globals.Graph_shift_size:]
+        globals.Press_array = globals.Press_array[-globals.Graph_shift_size:]
+        globals.myGraphIndexArray = globals.myGraphIndexArray[-globals.Graph_shift_size:]
+        
+        TEMP_AXIS.set_data(globals.myGraphIndexArray,globals.Temp_array)
+        PRESS_AXIS.set_data(globals.myGraphIndexArray,globals.Press_array)
+        
+        TEMP_AXIS.axes.relim(); TEMP_AXIS.axes.autoscale_view()
+        PRESS_AXIS.axes.relim(); PRESS_AXIS.axes.autoscale_view()
         globals.myGraphIndex +=1
-        GRAPH.draw()
+        CANVAS.draw_idle()
         
         
     #fix,latitude(DMS),NS,longtitude(DMS),EW,UTC+3,satellites,HDOP,checksum

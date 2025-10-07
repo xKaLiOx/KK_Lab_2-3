@@ -10,7 +10,8 @@ myFontBiggest = ("Times New Roman", 18,'bold')
 myFontMid = ("Times New Roman", 15,'bold')
 
 myGraphIndex = 0 #index for graph values
-Graph_shift_size = 30 # 30 latest values
+myGraphIndexArray = []
+Graph_shift_size = 60 # 60 latest values
 
 Temp_array = []
 Press_array = []

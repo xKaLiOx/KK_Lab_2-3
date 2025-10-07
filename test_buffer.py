@@ -1,11 +1,8 @@
+import matplotlib.pyplot as plt
+import KK_Lab2_GLOBALS as globals
 import numpy as np
 
+A = [1,2,4,4,56,6,7,7,5,54,42,24]
+print(A)
 
-
-ARRAY = np.zeros(30)
-print(ARRAY)
-
-index = 0
-
-for index in range(30):
-    print(index)
+print(A[-40:])

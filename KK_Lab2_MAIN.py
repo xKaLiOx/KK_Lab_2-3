@@ -27,22 +27,32 @@ root.resizable(False, False)
 #graph matlab
 px = 1/matplotlib.rcParams['figure.dpi']  # pixel in inches
 myFigureMain = Figure(dpi=100,tight_layout=True,figsize=(WIDTH_RIGHT_GUI*px,HEIGHT_RIGHT_GUI/2*px))
-myGraphPressure = myFigureMain.add_subplot(212)
-myGraphTemp = myFigureMain.add_subplot(211,sharex=myGraphPressure)
+myGraphPressureAx = myFigureMain.add_subplot(212)
+myGraphTempAx = myFigureMain.add_subplot(211)
+
+myGraphTemp, = myGraphTempAx.plot([],[])
+myGraphPres, = myGraphPressureAx.plot([],[])
 
 matplotlib.rcParams.update({'axes.titlesize':12, 'figure.titlesize':18})
 myFigureMain.suptitle('LPS22HB data')
-myGraphTemp.set_title('Temperature vs time')
-myGraphPressure.set_title('Pressure vs time')
-myGraphTemp.set_ylabel(r"Temperature, $\degree$C")
-myGraphPressure.set_ylabel("Pressure, hPa")
-myGraphPressure.ticklabel_format(style='plain',useOffset=False)
+myGraphTempAx.set_title('Temperature vs time')
+myGraphPressureAx.set_title('Pressure vs time')
+myGraphTempAx.set_ylabel(r"Temperature, $\degree$C")
+myGraphPressureAx.set_ylabel("Pressure, hPa")
+myGraphPressureAx.ticklabel_format(style='plain',useOffset=False)
 
-myButton_exit = tk.Button(root, text="Exit", command=lambda : Func.GUI_Exit(root),width=8, height=1,font=globals.myFontMain)
+myGraphPressureAx.set_xlim(auto=True)
+myGraphTempAx.set_xlim(auto=True)
+
+myFrame_right_side = tk.Frame(root,background='red',bg='red',height=HEIGHT_RIGHT_GUI,width=WIDTH_RIGHT_GUI)
+myFrame_right_bottom = tk.Frame(myFrame_right_side,background='blue',bg='blue',height=HEIGHT_RIGHT_GUI/2,width=WIDTH_RIGHT_GUI)
+myCanvas = FigureCanvasTkAgg(myFigureMain, master=myFrame_right_side)
+
+myButton_exit = tk.Button(root, text="Exit", command=lambda :Func.GUI_Exit(root),width=8, height=1,font=globals.myFontMain)
 myButton_port_settings = tk.Button(root, text="Serial Port Settings",font=("Times New Roman", 15,'bold'),width=20, height=2,
                                    command=lambda :KK_Lab2_UART_TAB.com_port_settings(root))
 myButton_clear_Label = tk.Button(root, text="Clear data",width=8, height=1,
-                                 command=lambda : Func.com_port_log_clear(myText_COM_logs,myGraphTemp,myGraphPressure,myGraph),font=globals.myFontMain)
+                                 command=lambda : Func.com_port_log_clear(myText_COM_logs,myGraphTemp,myGraphPres,myCanvas),font=globals.myFontMain)
 
 myText_COM_logs = tk.Text(root, height=10, width=53, font=globals.myFontMain, state='disabled')
 
@@ -71,6 +81,12 @@ value_change = {"open_port":myButton_open_port,
                 "HDOP":myLabel_HDOP_value
                 }
 
+
+#right side gui
+myToolbar = NavigationToolbar2Tk(myCanvas, myFrame_right_side,pack_toolbar=False)
+myCanvas.draw()
+myToolbar.update()
+
 myButton_open_port = tk.Button(root, text="Open port",font=("Times New Roman", 13),padx=40,width=10, height=1,
                                command=lambda :Func.COM_port_Open_Close(myButton_open_port,
                                                                         myLabel_COM_status,
@@ -80,17 +96,8 @@ myButton_open_port = tk.Button(root, text="Open port",font=("Times New Roman", 1
                                                                         myLabel_sattelites_value,
                                                                         myLabel_HDOP_value,
                                                                         myGraphTemp,
-                                                                        myGraphPressure,
-                                                                        myGraph))
-
-#right side gui
-myFrame_right_side = tk.Frame(root,background='red',bg='red',height=HEIGHT_RIGHT_GUI,width=WIDTH_RIGHT_GUI)
-myFrame_right_bottom = tk.Frame(myFrame_right_side,background='blue',bg='blue',height=HEIGHT_RIGHT_GUI/2,width=WIDTH_RIGHT_GUI)
-myGraph = FigureCanvasTkAgg(myFigureMain, master=myFrame_right_side)
-myGraph.draw()
-myToolbar = NavigationToolbar2Tk(myGraph, myFrame_right_side,pack_toolbar=False)
-myToolbar.update()
-
+                                                                        myGraphPres,
+                                                                        myCanvas))
 
 #grid placements
 tk.Label(root, text="").grid(row=0, column=0,columnspan=5)
@@ -116,13 +123,13 @@ myLabel_sattelites.grid(row=13,column=0,columnspan=2,padx=10)
 myLabel_sattelites_value.grid(row=13,column=2,sticky="w",columnspan=3)
 myLabel_HDOP.grid(row=14,column=0,columnspan=2,padx=10)
 myLabel_HDOP_value.grid(row=14,column=2,sticky="w",columnspan=3)
+
 #myButton_exit.grid(row=7, column=8)
 
 #place frame on the right side for graphs
 myFrame_right_side.grid(row = 0,rowspan=15,column=5,columnspan=1)
-myGraph.get_tk_widget().grid(row = 1,column=0)
+myCanvas.get_tk_widget().grid(row = 1,column=0)
 myToolbar.grid(row=0, column=0,sticky='W')
 myFrame_right_bottom.grid(row = 2,column=0)
-
 
 tk.mainloop()
