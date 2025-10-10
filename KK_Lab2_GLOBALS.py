@@ -3,6 +3,7 @@ import serial
 import numpy as np
 
 Port_connected = False
+Clearing_logs = False
 serialPort  = serial.Serial()
 
 myFontMain = ("Times New Roman", 12)

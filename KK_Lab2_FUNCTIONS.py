@@ -1,12 +1,13 @@
 import tkinter as tk
 import tkinter.messagebox as messagebox
+import tkintermapview
 import matplotlib
 import numpy as np
 
 import KK_Lab2_GLOBALS as globals
 
 
-def COM_port_Open_Close(button,label,root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH):
+def COM_port_Open_Close(button,label,root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH,MAP):
     if globals.Port_connected == False:
         try:
             globals.serialPort.baudrate = globals.selected_baud_rate
@@ -14,7 +15,7 @@ def COM_port_Open_Close(button,label,root,textbox,fix,time,satellites,HDOP,TEMP_
             globals.serialPort.parity = globals.parity_option_dict.get(globals.selected_parity)
             globals.serialPort.stopbits = int(globals.selected_stop_bits)
             globals.serialPort.bytesize = int(globals.selected_data_bits)
-            globals.serialPort.timeout = 0.01 #in seconds
+            globals.serialPort.timeout = 0.01 #10 ms
             
             globals.serialPort.close()
             globals.serialPort.open()
@@ -22,7 +23,7 @@ def COM_port_Open_Close(button,label,root,textbox,fix,time,satellites,HDOP,TEMP_
             label['background'] = "green"
             label['text'] = "OPEN"
             globals.Port_connected = True
-            root.after(10, lambda:COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH))#start reading
+            root.after(10, lambda:COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH,MAP))#start reading
         except Exception as e:
             tk.messagebox.showerror("ERROR", f"Port can't be opened: {e}")
             label['background'] = "red"
@@ -48,7 +49,7 @@ def GUI_Exit(root):
     if exit_msg:
         root.destroy()
         
-def COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH):
+def COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH,MAP):
     if globals.Port_connected:
         if globals.serialPort.in_waiting:
             try:
@@ -56,23 +57,25 @@ def COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXI
                 if data:
                     string_data = data.decode('ascii')
                     com_port_log_data(string_data,textbox)
-                    com_port_display_data(string_data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH)
+                    com_port_display_data(string_data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH,MAP)
             except Exception as e:
                 log_msg = f"Error reading data: {e}\n"
                 com_port_log_data(log_msg,textbox)
-        root.after(10, lambda: COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH))#blocking every 10 ms while port open
+        root.after(10, lambda: COM_port_read_data(root,textbox,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,GRAPH,MAP))#blocking every 10 ms while port open
     else: root.after_cancel(COM_port_read_data)
       
-def com_port_log_clear(textbox,temp_graph,press_graph,canvas):#clear logs,graph and index
+def com_port_log_clear(textbox,temp_graph,press_graph,canvas,map):#clear logs,graph and index
+    
     textbox['state'] = 'normal'
     textbox.delete(1.0, tk.END)
     textbox['state'] = 'disabled'
+    globals.Clearing_logs = True
     globals.myGraphIndex = 0
     globals.Press_array = []
     globals.Temp_array = []
     globals.myGraphIndexArray = []
-    temp_graph.clear()
-    press_graph.clear()
+    map.delete_all_marker()
+    globals.Clearing_logs = False
     canvas.draw()
     globals.serialPort.reset_input_buffer()
     
@@ -86,7 +89,7 @@ def com_port_log_data(data,textbox):
     textbox.see(tk.END)
     textbox['state'] = 'disabled'
     
-def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,CANVAS):
+def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,CANVAS,MAP):
     if data.startswith("$PNLBLPS"):
         #command, pressure 1.1f, tempeature 1.1f, checksum
         splitted_data = data.split(',')
@@ -124,6 +127,8 @@ def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,CAN
         HDOP_var = splitted_data[8]
         checksum = splitted_data[9].split()#remove \r\n end
         
+        if globals.Clearing_logs == False:
+            MAP.set_marker(float(latitude),float(longtitude))
         fix['background'] = "green" if int(GNSS_fix) == 1 else "red"
         time['text'] = EET_summer[0:2]+':'+EET_summer[2:4]+':'+EET_summer[4:6]
         satellites['text'] = satellite_count

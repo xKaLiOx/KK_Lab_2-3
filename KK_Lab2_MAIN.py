@@ -1,9 +1,11 @@
 #main packages
 import tkinter as tk
+import tkintermapview
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from matplotlib.figure import Figure
+
 matplotlib.use("TkAgg")
 
 #declaring my modules
@@ -44,7 +46,7 @@ myGraphPressureAx.ticklabel_format(style='plain',useOffset=False)
 myGraphPressureAx.set_xlim(auto=True)
 myGraphTempAx.set_xlim(auto=True)
 
-myFrame_right_side = tk.Frame(root,background='red',bg='red',height=HEIGHT_RIGHT_GUI,width=WIDTH_RIGHT_GUI)
+myFrame_right_side = tk.Frame(root,height=HEIGHT_RIGHT_GUI,width=WIDTH_RIGHT_GUI)
 myFrame_right_bottom = tk.Frame(myFrame_right_side,background='blue',bg='blue',height=HEIGHT_RIGHT_GUI/2,width=WIDTH_RIGHT_GUI)
 myCanvas = FigureCanvasTkAgg(myFigureMain, master=myFrame_right_side)
 
@@ -52,7 +54,7 @@ myButton_exit = tk.Button(root, text="Exit", command=lambda :Func.GUI_Exit(root)
 myButton_port_settings = tk.Button(root, text="Serial Port Settings",font=("Times New Roman", 15,'bold'),width=20, height=2,
                                    command=lambda :KK_Lab2_UART_TAB.com_port_settings(root))
 myButton_clear_Label = tk.Button(root, text="Clear data",width=8, height=1,
-                                 command=lambda : Func.com_port_log_clear(myText_COM_logs,myGraphTemp,myGraphPres,myCanvas),font=globals.myFontMain)
+                                 command=lambda : Func.com_port_log_clear(myText_COM_logs,myGraphTemp,myGraphPres,myCanvas,myMapWidget),font=globals.myFontMain)
 
 myText_COM_logs = tk.Text(root, height=10, width=53, font=globals.myFontMain, state='disabled')
 
@@ -87,6 +89,13 @@ myToolbar = NavigationToolbar2Tk(myCanvas, myFrame_right_side,pack_toolbar=False
 myCanvas.draw()
 myToolbar.update()
 
+myMapWidget = tkintermapview.TkinterMapView(myFrame_right_bottom, width=WIDTH_RIGHT_GUI, height=HEIGHT_RIGHT_GUI/2,)
+myMapWidget.set_position(54.90396923101469, 23.957806638243493) #KTU 11 rumai
+myMapWidget.set_zoom(12)
+tile_server_url = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+myMapWidget.set_tile_server(tile_server_url,max_zoom = 17)
+#use light map for faster response and less max zoom
+
 myButton_open_port = tk.Button(root, text="Open port",font=("Times New Roman", 13),padx=40,width=10, height=1,
                                command=lambda :Func.COM_port_Open_Close(myButton_open_port,
                                                                         myLabel_COM_status,
@@ -97,7 +106,8 @@ myButton_open_port = tk.Button(root, text="Open port",font=("Times New Roman", 1
                                                                         myLabel_HDOP_value,
                                                                         myGraphTemp,
                                                                         myGraphPres,
-                                                                        myCanvas))
+                                                                        myCanvas,
+                                                                        myMapWidget))
 
 #grid placements
 tk.Label(root, text="").grid(row=0, column=0,columnspan=5)
@@ -131,5 +141,6 @@ myFrame_right_side.grid(row = 0,rowspan=15,column=5,columnspan=1)
 myCanvas.get_tk_widget().grid(row = 1,column=0)
 myToolbar.grid(row=0, column=0,sticky='W')
 myFrame_right_bottom.grid(row = 2,column=0)
+myMapWidget.grid(row = 2,column=0)
 
 tk.mainloop()
