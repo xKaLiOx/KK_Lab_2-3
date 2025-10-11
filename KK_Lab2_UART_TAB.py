@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-
 import KK_Lab2_GLOBALS
 import serial
 import serial.tools.list_ports
@@ -10,23 +9,18 @@ WINDOW_HEIGHT = 350
 WINDOW_WIDTH = 250
 
 #UART settings options
-
 port_options = []
 stop_bits_options = [1, 2]
 baud_rate_options = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]
 data_bits_options = [5, 6, 7, 8]
 
-
 #function definitions
-
 def com_port_update_settings(window,port, baud, parity, stop):
-
     #update globals for main GUI
     KK_Lab2_GLOBALS.selected_baud_rate = baud
     KK_Lab2_GLOBALS.selected_port = port
     KK_Lab2_GLOBALS.selected_parity = parity
     KK_Lab2_GLOBALS.selected_stop_bits = stop
-    
     window.destroy()
 
 def com_port_list_update(port_options):
@@ -35,7 +29,6 @@ def com_port_list_update(port_options):
 def com_port_settings(root):
     
     myWindow_uart_settings = tk.Toplevel(root)
-    #myWindow_uart_settings.geometry("200x600")
     myWindow_uart_settings.resizable(False, False)
     myWindow_uart_settings.title("UART settings")
     myWindow_uart_settings.iconbitmap("icon.ico")

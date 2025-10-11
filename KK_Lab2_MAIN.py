@@ -5,7 +5,6 @@ import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from matplotlib.figure import Figure
-
 matplotlib.use("TkAgg")
 
 #declaring my modules
@@ -37,10 +36,14 @@ myGraphPres, = myGraphPressureAx.plot([],[])
 
 matplotlib.rcParams.update({'axes.titlesize':12, 'figure.titlesize':18})
 myFigureMain.suptitle('LPS22HB data')
-myGraphTempAx.set_title('Temperature vs time')
-myGraphPressureAx.set_title('Pressure vs time')
+myGraphTempAx.set_title('Temperature graph')
+myGraphPressureAx.set_title('Pressure graph')
 myGraphTempAx.set_ylabel(r"Temperature, $\degree$C")
 myGraphPressureAx.set_ylabel("Pressure, hPa")
+myGraphPressureAx.set_xlabel("Samples")
+myGraphTempAx.grid()
+myGraphPressureAx.grid()
+myGraphTempAx.set_xlabel("Samples")
 myGraphPressureAx.ticklabel_format(style='plain',useOffset=False)
 
 myGraphPressureAx.set_xlim(auto=True)
