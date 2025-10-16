@@ -42,19 +42,19 @@ def com_port_settings(root):
     #update port list
     com_port_list_update(port_options)
     
-    myLabel_port_name = tk.Label(myWindow_uart_settings, text="Port name", font=KK_Lab2_GLOBALS.myFontMain,justify="center",padx=50)
-    myComboBox_port_name = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.myFontMain,width=15)
-    myLabel_port_rate = tk.Label(myWindow_uart_settings, text="Baud rate", font=KK_Lab2_GLOBALS.myFontMain,justify="center",padx=50)
-    myComboBox_port_rate = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.myFontMain,width=15)
-    myLabel_port_parity = tk.Label(myWindow_uart_settings, text="Parity", font=KK_Lab2_GLOBALS.myFontMain,justify="center",padx=50)
-    myComboBox_port_parity = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.myFontMain,width=15)
-    myLabel_port_stop_bits = tk.Label(myWindow_uart_settings, text="Stop bits", font=KK_Lab2_GLOBALS.myFontMain,justify="center",padx=50)
-    myComboBox_port_stop_bits = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.myFontMain,width=15)
-    myLabel_port_data_bits = tk.Label(myWindow_uart_settings, text="Data bits", font=KK_Lab2_GLOBALS.myFontMain,justify="center",padx=50)
-    myComboBox_port_data_bits = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.myFontMain,width=15)
+    myLabel_port_name = tk.Label(myWindow_uart_settings, text="Port name", font=KK_Lab2_GLOBALS.MYFONTMAIN,justify="center",padx=50)
+    myComboBox_port_name = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.MYFONTMAIN,width=15)
+    myLabel_port_rate = tk.Label(myWindow_uart_settings, text="Baud rate", font=KK_Lab2_GLOBALS.MYFONTMAIN,justify="center",padx=50)
+    myComboBox_port_rate = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.MYFONTMAIN,width=15)
+    myLabel_port_parity = tk.Label(myWindow_uart_settings, text="Parity", font=KK_Lab2_GLOBALS.MYFONTMAIN,justify="center",padx=50)
+    myComboBox_port_parity = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.MYFONTMAIN,width=15)
+    myLabel_port_stop_bits = tk.Label(myWindow_uart_settings, text="Stop bits", font=KK_Lab2_GLOBALS.MYFONTMAIN,justify="center",padx=50)
+    myComboBox_port_stop_bits = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.MYFONTMAIN,width=15)
+    myLabel_port_data_bits = tk.Label(myWindow_uart_settings, text="Data bits", font=KK_Lab2_GLOBALS.MYFONTMAIN,justify="center",padx=50)
+    myComboBox_port_data_bits = ttk.Combobox(myWindow_uart_settings, state='readonly',font=KK_Lab2_GLOBALS.MYFONTMAIN,width=15)
     
-    myButton_port_settings_apply = tk.Button(myWindow_uart_settings, text="Apply", command=lambda :com_port_update_settings(myWindow_uart_settings,myComboBox_port_name.get(),myComboBox_port_rate.get(),myComboBox_port_parity.get(),myComboBox_port_stop_bits.get()),width=4, height=1,font=KK_Lab2_GLOBALS.myFontMain)
-    myButton_port_settings_cancel = tk.Button(myWindow_uart_settings, text="Cancel", command=myWindow_uart_settings.destroy,width=4, height=1,font=KK_Lab2_GLOBALS.myFontMain)
+    myButton_port_settings_apply = tk.Button(myWindow_uart_settings, text="Apply", command=lambda :com_port_update_settings(myWindow_uart_settings,myComboBox_port_name.get(),myComboBox_port_rate.get(),myComboBox_port_parity.get(),myComboBox_port_stop_bits.get()),width=4, height=1,font=KK_Lab2_GLOBALS.MYFONTMAIN)
+    myButton_port_settings_cancel = tk.Button(myWindow_uart_settings, text="Cancel", command=myWindow_uart_settings.destroy,width=4, height=1,font=KK_Lab2_GLOBALS.MYFONTMAIN)
     
 
     myComboBox_port_name['values'] = [port.device for port in serial.tools.list_ports.comports()]

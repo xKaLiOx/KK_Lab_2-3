@@ -1,0 +1,2 @@
+# Index,Time(EET),Latitude,Longitude
+0,144258,54.89340,24.01203

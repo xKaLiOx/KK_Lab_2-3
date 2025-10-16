@@ -45,7 +45,6 @@ myGraphTempAx.grid()
 myGraphPressureAx.grid()
 myGraphTempAx.set_xlabel("Samples")
 myGraphPressureAx.ticklabel_format(style='plain',useOffset=False)
-
 myGraphPressureAx.set_xlim(auto=True)
 myGraphTempAx.set_xlim(auto=True)
 
@@ -53,39 +52,33 @@ myFrame_right_side = tk.Frame(root,height=HEIGHT_RIGHT_GUI,width=WIDTH_RIGHT_GUI
 myFrame_right_bottom = tk.Frame(myFrame_right_side,background='blue',bg='blue',height=HEIGHT_RIGHT_GUI/2,width=WIDTH_RIGHT_GUI)
 myCanvas = FigureCanvasTkAgg(myFigureMain, master=myFrame_right_side)
 
-myButton_exit = tk.Button(root, text="Exit", command=lambda :Func.GUI_Exit(root),width=8, height=1,font=globals.myFontMain)
+myButton_exit = tk.Button(root, text="Exit", command=lambda :Func.GUI_Exit(root),width=8, height=1,font=globals.MYFONTMAIN)
 myButton_port_settings = tk.Button(root, text="Serial Port Settings",font=("Times New Roman", 15,'bold'),width=20, height=2,
                                    command=lambda :KK_Lab2_UART_TAB.com_port_settings(root))
 myButton_clear_Label = tk.Button(root, text="Clear data",width=8, height=1,
-                                 command=lambda : Func.com_port_log_clear(myText_COM_logs,myGraphTemp,myGraphPres,myCanvas,myMapWidget),font=globals.myFontMain)
+                                 command=lambda : Func.com_port_log_clear(myText_COM_logs,myGraphTemp,myGraphPres,myCanvas,myMapWidget),font=globals.MYFONTMAIN)
+myButton_save_data = tk.Button(root, text="Save data",width=8, height=1,
+                                 command=lambda : Func.Save_plot_data(),font=globals.MYFONTMAIN)
+myText_COM_logs = tk.Text(root, height=10, width=53, font=globals.MYFONTMAIN, state='disabled')
 
-myText_COM_logs = tk.Text(root, height=10, width=53, font=globals.myFontMain, state='disabled')
+myLabel_COM_status = tk.Label(root, background="red",padx=35, font=globals.MYFONTMID,width=9)
+myLabel_FIX = tk.Label(root, text="GNSS FIX STATUS", font=globals.MYFONTBIGGEST)
+myLabel_FIX_status = tk.Label(root, background="red",padx=5, font=globals.MYFONTMAIN,width=3)
 
-myLabel_COM_status = tk.Label(root, background="red",padx=35, font=globals.myFontMid,width=9)
-myLabel_FIX = tk.Label(root, text="GNSS FIX STATUS", font=globals.myFontBiggest)
-myLabel_FIX_status = tk.Label(root, background="red",padx=5, font=globals.myFontMain,width=3)
+myLabel_time = tk.Label(root, text="Time(EET):", font=globals.MYFONTBIGGEST)
+myLabel_time_value = tk.Label(root, text="--:--:--", font=globals.MYFONTBIGGEST,anchor='w',justify="left")
 
-myLabel_time = tk.Label(root, text="Time(EET):", font=globals.myFontBiggest)
-myLabel_time_value = tk.Label(root, text="--:--:--", font=globals.myFontBiggest,anchor='w',justify="left")
+myLabel_Lat = tk.Label(root, text="Latitude:", font=globals.MYFONTMID)
+myLabel_Lat_value = tk.Label(root, text="--", font=globals.MYFONTMID,anchor='w',justify="left")
 
-myLabel_sattelites = tk.Label(root, text="Satellites:", font=globals.myFontMid)
-myLabel_sattelites_value = tk.Label(root, text="--", font=globals.myFontMid,anchor='w',justify="left")
+myLabel_Lon = tk.Label(root, text="Longitude:", font=globals.MYFONTMID)
+myLabel_Lon_value = tk.Label(root, text="--", font=globals.MYFONTMID,anchor='w',justify="left")
 
-myLabel_HDOP = tk.Label(root, text="HDOP:", font=globals.myFontMid)
-myLabel_HDOP_value = tk.Label(root, text="--", font=globals.myFontMid,anchor='w',justify="left")
+myLabel_sattelites = tk.Label(root, text="Satellites:", font=globals.MYFONTMID)
+myLabel_sattelites_value = tk.Label(root, text="--", font=globals.MYFONTMID,anchor='w',justify="left")
 
-myButton_open_port = tk.Button()
-
-value_change = {"open_port":myButton_open_port,
-                "com_status":myLabel_COM_status,
-                "root":root,
-                "com_logs":myText_COM_logs,
-                "FIX":myLabel_FIX_status,
-                "TIME":myLabel_time_value,
-                "SATTELITES":myLabel_sattelites_value,
-                "HDOP":myLabel_HDOP_value
-                }
-
+myLabel_HDOP = tk.Label(root, text="HDOP:", font=globals.MYFONTMID)
+myLabel_HDOP_value = tk.Label(root, text="--", font=globals.MYFONTMID,anchor='w',justify="left")
 
 #right side gui
 myToolbar = NavigationToolbar2Tk(myCanvas, myFrame_right_side,pack_toolbar=False)
@@ -97,7 +90,7 @@ myMapWidget.set_position(54.90396923101469, 23.957806638243493) #KTU 11 rumai
 myMapWidget.set_zoom(12)
 tile_server_url = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 myMapWidget.set_tile_server(tile_server_url,max_zoom = 17)
-#use light map for faster response and less max zoom
+#light map for faster response and less max zoom
 
 myButton_open_port = tk.Button(root, text="Open port",font=("Times New Roman", 13),padx=40,width=10, height=1,
                                command=lambda :Func.COM_port_Open_Close(myButton_open_port,
@@ -110,13 +103,15 @@ myButton_open_port = tk.Button(root, text="Open port",font=("Times New Roman", 1
                                                                         myGraphTemp,
                                                                         myGraphPres,
                                                                         myCanvas,
-                                                                        myMapWidget))
+                                                                        myMapWidget,
+                                                                        myLabel_Lat_value,
+                                                                        myLabel_Lon_value))
 
 #grid placements
 tk.Label(root, text="").grid(row=0, column=0,columnspan=5)
 tk.Label(root, text="").grid(row=4, column=0,columnspan=5)
 tk.Label(root, text="").grid(row=6, column=0,columnspan=5)
-tk.Label(root, text="").grid(row=8, column=0,columnspan=5,pady=15)
+tk.Label(root, text="").grid(row=8, column=0,columnspan=5,pady=5)
 tk.Label(root, text="").grid(row=10, column=0,columnspan=5)
 tk.Label(root, text="").grid(row=12, column=0,columnspan=5)
 
@@ -126,18 +121,21 @@ tk.Label(root, text="").grid(row=2, column=2)
 myButton_open_port.grid(row=1, column=2)
 
 myText_COM_logs.grid(row=5, column=0, columnspan=5,padx=10)
-myButton_clear_Label.grid(row=7,column=0,columnspan=5)
+myButton_clear_Label.grid(row=7,column=0,columnspan=2)
+myButton_save_data.grid(row=7,column=2,columnspan=2)
 
 myLabel_FIX.grid(row=9,column=0,padx=10,columnspan=2)
 myLabel_FIX_status.grid(row=9,column=1,padx=10,sticky="w")
-myLabel_time.grid(row=11,column=0,columnspan=2,padx=10)
-myLabel_time_value.grid(row=11,column=2,sticky="w",columnspan=3)
+myLabel_time.grid(row=10,column=0,columnspan=2,padx=10)
+myLabel_time_value.grid(row=10,column=2,sticky="w",columnspan=3)
 myLabel_sattelites.grid(row=13,column=0,columnspan=2,padx=10)
 myLabel_sattelites_value.grid(row=13,column=2,sticky="w",columnspan=3)
 myLabel_HDOP.grid(row=14,column=0,columnspan=2,padx=10)
 myLabel_HDOP_value.grid(row=14,column=2,sticky="w",columnspan=3)
-
-#myButton_exit.grid(row=7, column=8)
+myLabel_Lat.grid(row=12,column=0,padx=10,columnspan=2)
+myLabel_Lat_value.grid(row=12,column=2,sticky="w",columnspan=3)
+myLabel_Lon.grid(row=11,column=0,padx=10,columnspan=2)
+myLabel_Lon_value.grid(row=11,column=2,sticky="w",columnspan=3)
 
 #place frame on the right side for graphs
 myFrame_right_side.grid(row = 0,rowspan=15,column=5,columnspan=1)

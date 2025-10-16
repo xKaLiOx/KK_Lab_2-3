@@ -6,16 +6,21 @@ Port_connected = False
 Clearing_logs = False
 serialPort  = serial.Serial()
 
-myFontMain = ("Times New Roman", 12)
-myFontBiggest = ("Times New Roman", 18,'bold')
-myFontMid = ("Times New Roman", 15,'bold')
+MYFONTMAIN = ("Times New Roman", 12)
+MYFONTBIGGEST = ("Times New Roman", 18,'bold')
+MYFONTMID = ("Times New Roman", 15,'bold')
 
 myGraphIndex = 0 #index for graph values
-myGraphIndexArray = []
-Graph_shift_size = 60 # 60 latest values
+Index_gps = 0
+myGraphIndexArraySensor = []
+myGraphIndexArrayGPS = []
+GRAPH_SHIFT_SIZE = 60 # 60 latest values
 
 Temp_array = []
 Press_array = []
+Time_array = []
+Lat_array = []
+Lon_array = []
 
 selected_port = " "
 selected_baud_rate = 9600
