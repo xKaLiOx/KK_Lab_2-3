@@ -157,7 +157,7 @@ def com_port_display_data(data,fix,time,satellites,HDOP,TEMP_AXIS,PRESS_AXIS,CAN
         
         
 def Save_plot_data():
-    if len(globals.Press_array) > 0 and len(globals.Time_array) > 0:
+    if len(globals.Press_array) > 0 and len(globals.Time_array) > 0:# GPS and LPS data not empty
         try:
             #format a big array
             data1 = rfn.merge_arrays((np.array(globals.myGraphIndexArraySensor), np.array(globals.Temp_array), np.array(globals.Press_array)))
