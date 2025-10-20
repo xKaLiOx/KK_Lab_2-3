@@ -4,43 +4,170 @@ import numpy.lib.recfunctions as rfn
 from tkinter import messagebox
 import class_constants as consts
 
-def Save_Buffer_Data(self):
-    if len(self.Press_array) > 0 and len(self.Time_array) > 0:# GPS and LPS data not empty
+import mysql.connector
+from config import *
+
+
+def Save_Buffer_Data(App):
+    if len(App.Press_array) > 0 and len(App.Time_array) > 0:  # GPS and LPS data not empty
         try:
-            #format a big array
-            data1 = rfn.merge_arrays((np.array(self.myGraphIndexArraySensor), np.array(self.Temp_array), np.array(self.Press_array)))
-            np.savetxt('KK_Lab2_Data_Sensor.txt', data1, fmt=["%d","%.1f","%.1f"], delimiter=',',header="Index,Temperature,Pressure")
-            data2 = rfn.merge_arrays((np.array(self.myGraphIndexArrayGPS),np.array(self.Time_array), np.array(self.Lat_array), np.array(self.Lon_array)))
-            np.savetxt('KK_Lab2_Data_GPS.txt', data2, fmt=["%d","%s","%.5f","%.5f"], delimiter=',',header="Index,Time(EET),Latitude,Longitude")
-            messagebox.showinfo("INFO", "Data saved to KK_Lab2_Data_Sensor.txt and KK_Lab2_Data_GPS.txt")
+            # format a big array
+            data1 = rfn.merge_arrays((np.array(App.myGraphIndexArraySensor), np.array(
+                App.Temp_array), np.array(App.Press_array)))
+            np.savetxt('KK_Lab2_Data_Sensor.txt', data1, fmt=[
+                       "%d", "%.1f", "%.1f"], delimiter=',', header="Index,Temperature,Pressure")
+            data2 = rfn.merge_arrays((np.array(App.myGraphIndexArrayGPS), np.array(
+                App.Time_array), np.array(App.Lat_array), np.array(App.Lon_array)))
+            np.savetxt('KK_Lab2_Data_GPS.txt', data2, fmt=[
+                       "%d", "%s", "%.5f", "%.5f"], delimiter=',', header="Index,Time(EET),Latitude,Longitude")
+            messagebox.showinfo(
+                "INFO", "Data saved to KK_Lab2_Data_Sensor.txt and KK_Lab2_Data_GPS.txt")
         except Exception as e:
             messagebox.showerror("ERROR", f"Error saving data: {e}")
     else:
         messagebox.showwarning("WARNING", "No data to save.")
-        
-def COM_PORT_DISPLAY_UPDATE_GPS(self,GNSS_fix=None,latitude=None,NS=None,longtitude=None,EW=None,EET_summer=None,satellite_count=None,HDOP_var=None):
-    if self.Clearing_logs == False:
-        self.myMapWidget.set_marker(float(latitude),float(longtitude))
-        self.myLabel_FIX_status['background'] = "green" if int(GNSS_fix) == 1 else "red"
-        self.myLabel_time_value['text'] = EET_summer[0:2]+':'+EET_summer[2:4]+':'+EET_summer[4:6]
-        self.myLabel_sattelites_value['text'] = satellite_count
-        self.myLabel_HDOP_value['text'] = HDOP_var
-        self.myLabel_Lat_value['text'] = f"{float(latitude) if NS == 'N' else -float(latitude):.5f}"
-        self.myLabel_Lon_value['text'] = f"{float(longtitude) if EW == 'E' else -float(longtitude):.5f}"
-        
-def SENSOR_DISPLAY_UPDATE(self,temperature=None,pressure=None):
-    self.Temp_array.append(temperature)
-    self.Press_array.append(pressure)
-    self.myGraphIndexArraySensor.append(self.myGraphIndex)
-    
-    self.Temp_array = self.Temp_array[-(3*consts.GRAPH_SHIFT_SIZE):]
-    self.Press_array = self.Press_array[-(3*consts.GRAPH_SHIFT_SIZE):]
-    self.myGraphIndexArraySensor = self.myGraphIndexArraySensor[-(3*consts.GRAPH_SHIFT_SIZE):]
-    
-    self.myGraphTemp.set_data(self.myGraphIndexArraySensor,self.Temp_array)
-    self.myGraphPres.set_data(self.myGraphIndexArraySensor,self.Press_array)
-    
-    self.myGraphTemp.axes.relim(); self.myGraphTemp.axes.autoscale_view()
-    self.myGraphPres.axes.relim(); self.myGraphPres.axes.autoscale_view()
-    self.myGraphIndex +=1
-    self.myCanvas.draw_idle()
+
+
+def COM_PORT_DISPLAY_UPDATE_GPS(App, GNSS_fix=None, latitude=None, NS=None, longtitude=None, EW=None, EET_summer=None, satellite_count=None, HDOP_var=None):
+    if App.Clearing_logs == False:
+        App.myMapWidget.set_marker(float(latitude), float(longtitude))
+        App.myLabel_FIX_status['background'] = "green" if int(
+            GNSS_fix) == 1 else "red"
+        App.myLabel_time_value['text'] = EET_summer[0:2] + \
+            ':'+EET_summer[2:4]+':'+EET_summer[4:6]
+        App.myLabel_sattelites_value['text'] = satellite_count
+        App.myLabel_HDOP_value['text'] = HDOP_var
+        App.myLabel_Lat_value['text'] = f"{float(latitude) if NS == 'N' else -float(latitude):.5f}"
+        App.myLabel_Lon_value['text'] = f"{float(longtitude) if EW == 'E' else -float(longtitude):.5f}"
+
+
+def SENSOR_DISPLAY_UPDATE(App, temperature=None, pressure=None):
+    App.Temp_array.append(temperature)
+    App.Press_array.append(pressure)
+    App.myGraphIndexArraySensor.append(App.myGraphIndex)
+
+    App.Temp_array = App.Temp_array[-(3*consts.GRAPH_SHIFT_SIZE):]
+    App.Press_array = App.Press_array[-(3*consts.GRAPH_SHIFT_SIZE):]
+    App.myGraphIndexArraySensor = App.myGraphIndexArraySensor[-(
+        3*consts.GRAPH_SHIFT_SIZE):]
+
+    App.myGraphTemp.set_data(App.myGraphIndexArraySensor, App.Temp_array)
+    App.myGraphPres.set_data(App.myGraphIndexArraySensor, App.Press_array)
+
+    App.myGraphTemp.axes.relim()
+    App.myGraphTemp.axes.autoscale_view()
+    App.myGraphPres.axes.relim()
+    App.myGraphPres.axes.autoscale_view()
+    App.myGraphIndex += 1
+    App.myCanvas.draw_idle()
+
+
+def DB_Tables_Check_Create():
+    "Check and create tables for database"
+
+    DB_connection = mysql.connector.connect(**config)
+    cursor = DB_connection.cursor()
+    # test if tables are available in DB
+    cursor.execute("SHOW TABLES")
+    received = cursor.fetchall()
+    # getting list of tuples, convert to list for tables
+    result = np.array(received).flatten().tolist()
+    if (set(consts.table_names).issubset(result)) == False:
+        if not consts.table_names[0] in result:
+            table_query = f"CREATE TABLE {consts.table_names[0]} (`ID` int(255) unsigned NOT NULL AUTO_INCREMENT,\
+  `TEMPERATURE` float(5,1) NOT NULL,\
+  `PRESSURE` float(6,1) unsigned NOT NULL,\
+  UNIQUE KEY `UNIQUE_VALUES` (`ID`) USING BTREE\
+) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci"
+            cursor.execute(table_query)
+            # set ID to 1
+            increment_query = f"ALTER TABLE {consts.table_names[0]} AUTO_INCREMENT=1"
+            cursor.execute(increment_query)
+        if not consts.table_names[1] in result:
+            table_query = f"""CREATE TABLE {consts.table_names[1]} (
+                            `ID` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `FIX` bit(1) NOT NULL,
+  `LATITUDE` double(8,5) NOT NULL,
+  `NS` varchar(1) NOT NULL,
+  `LONGTITUDE` double(8,5) NOT NULL,
+  `EW` varchar(1) NOT NULL,
+  `TIME` int(11) unsigned NOT NULL,
+  `SATELL_CNT` tinyint(3) unsigned NOT NULL,
+  `HDOP` float(3,1) unsigned NOT NULL,
+  UNIQUE KEY `Unique_index` (`ID`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"""
+            cursor.execute(table_query)
+            # set ID to 1
+            increment_query = f"ALTER TABLE {consts.table_names[0]} AUTO_INCREMENT=1"
+            cursor.execute(increment_query)
+    DB_connection.commit()
+
+
+def DB_Create_Connection(App):
+    try:
+        DB_connection = mysql.connector.connect(**config)
+        cursor = DB_connection.cursor()
+
+        App.mySQL_open_status['background'] = "green"
+        App.mySQL_open_status['text'] = "OK"
+        DB_Tables_Check_Create()
+    except mysql.connector.Error as err:
+        App.mySQL_open_status['background'] = "red"
+        App.mySQL_open_status['text'] = "ER"
+
+        if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
+            messagebox.showerror(
+                "ERROR", "Something is wrong with your user name or password")
+            App.mySQL_start_record['state'] = 'disabled'
+        elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
+            if (messagebox.askyesno("ERROR", "Database does not exist, do you want to create it?", icon='warning') == True):
+                temp_config = config.copy()
+                temp_config.pop('database')
+                DB_connection = mysql.connector.connect(**temp_config)
+                cursor = DB_connection.cursor()
+                cursor.execute(f"CREATE DATABASE {config['database']}")
+                DB_connection.commit()
+                App.mySQL_open_status['background'] = "green"
+                App.mySQL_open_status['text'] = "OK"
+                messagebox.showinfo(
+                    "INFO", f"Database {config['database']} created successfully.")
+                # create all tables needed
+                DB_Tables_Check_Create()
+        else:
+            messagebox.showerror("ERROR", f"Database connection error: {err}")
+            App.mySQL_start_record['state'] = 'disabled'
+
+
+def DB_Add_Data(App, data: dict):  # brief data is dict
+    """'ID' : LPS22HB,'temp'  temperature,'pressure'  pressure}
+    'ID' : "GPS",'FIX'  GNSS_fix,'LAT'  latitude'NS' NS,'LONG'  longtitude,'EW'  EW,'TIME'  EET_summer,'SATELL'  satellite_count,'HDOP'  HDOP_var"""
+    try:
+        db_connect = mysql.connector.connect(**config)
+        db_cursor = db_connect.cursor()
+
+        if data['ID'] == consts.table_names[0]:  # LPS22HB
+            insert_query = f"""INSERT INTO {data['ID']} (TEMPERATURE, PRESSURE) VALUES(
+'{data['temp']}',
+'{data['pressure']}')"""
+            db_cursor.execute(insert_query)
+            db_connect.commit()
+
+        elif data['ID'] == consts.table_names[1]:  # GPS
+            insert_query = f"""INSERT INTO {data['ID']} VALUES(
+                '0',
+                {data['FIX']},
+                {data['LAT']},
+                '{data['NS']}',
+                {data['LONG']},
+                '{data['EW']}',
+                {data['TIME']},
+                {data['SATELL']},
+                {data['HDOP']}
+            )"""
+            #NS and EW need '', otherwise MySQL not match 0 for auto increment
+            db_cursor.execute(insert_query)
+            db_connect.commit()
+    except Exception as e:
+        messagebox.showerror("ERROR", f"Error saving data to MySQL: {e}")
+        # turn off saving to SQL
+        App.var.set(0)

@@ -24,6 +24,10 @@ class Application_UART_Settings(tk.Toplevel):
         x_cordinate = int((screen_width/2) - (consts.UART_WINDOW_WIDTH/2))
         y_cordinate = int((screen_height/2) - (consts.UART_WINDOW_HEIGHT/2))
         self.geometry("{}x{}+{}+{}".format(consts.UART_WINDOW_WIDTH, consts.UART_WINDOW_HEIGHT, x_cordinate, y_cordinate))
+        
+        self.create_widgets()
+        self.create_layout()
+        self.create_values()
     
     def create_widgets(self):
         self.myLabel_port_name = tk.Label(self, text="Port name", font=consts.MYFONTMAIN,justify="center",padx=50)

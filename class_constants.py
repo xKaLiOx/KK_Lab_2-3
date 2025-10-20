@@ -19,19 +19,5 @@ GRAPH_SHIFT_SIZE = 60 # 60 latest values
 
 parity_option_dict = {"None": serial.PARITY_NONE,"Even": serial.PARITY_EVEN,"Odd": serial.PARITY_ODD,"Mark": serial.PARITY_MARK,"Space": serial.PARITY_SPACE}
 
-#global vars
-Port_connected = False
-Clearing_logs = False
-serialPort  = serial.Serial()
-
-myGraphIndex = 0 #index for graph values
-Index_gps = 0
-myGraphIndexArraySensor = []
-myGraphIndexArrayGPS = []
-
-Temp_array = []
-Press_array = []
-Time_array = []
-Lat_array = []
-Lon_array = []
+table_names = ["lps22hb","gnss_module"]
 

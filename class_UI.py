@@ -15,16 +15,18 @@ import serial.tools.list_ports
 import numpy as np
 from numpy.lib import recfunctions as rfn
 
+import mysql.connector
 #my packages
 from class_data_logging import *
 import class_constants as consts
 import class_UART_tab
+import class_SQL_tab
 
 class Application(tk.Tk):
     def __init__(self):
         super().__init__()
         print("Init App")
-        self.title("Kompiuterinės komunikacijos 2 laboratorinis darbas")
+        self.title("KK lab sensor data logger")
         self.geometry("{}x{}+{}+{}".format(consts.MAIN_WINDOW_WIDTH, consts.MAIN_WINDOW_HEIGHT, 200, 15))
         self.iconbitmap("icon.ico")
         self.resizable(False, False)
@@ -61,7 +63,7 @@ class Application(tk.Tk):
         self.myCanvas = FigureCanvasTkAgg(self.matlab_figure, master=self.myFrame_right_side)
 
         self.myButton_exit = tk.Button(self, text="Exit",width=8,command = lambda : self.App_exit(), height=1,font=consts.MYFONTMAIN)
-        self.myButton_port_settings = tk.Button(self, text="Serial Port Settings",font=("Times New Roman", 15,'bold')
+        self.myButton_port_settings = tk.Button(self, text="Serial Port Settings",font=consts.MYFONTMID
                                                 ,command=lambda :self.Open_UART_Settings(),width=20, height=2,)
         self.myButton_clear_logs = tk.Button(self, text="Clear data",width=8, height=1,
                                         font=consts.MYFONTMAIN,command= lambda : self.COM_Port_Clear_Logs())
@@ -102,19 +104,32 @@ class Application(tk.Tk):
 
         self.myButton_open_port = tk.Button(self, text="Open port",font=("Times New Roman", 13),padx=40,width=10, height=1
                                             ,command=lambda : self.COM_Port_Open_Close())
+        
+        #widget for SQL settings
+        self.myButton_SQL_settings = tk.Button(self, text="SQL Settings",font=consts.MYFONTMID, command = lambda : self.Open_SQL_Settings(),padx=60)
+        self.mySQL_open_status = tk.Label(self, background="red", font=consts.MYFONTMID,padx=8)
+        
+        self.var = tk.IntVar()
+        self.mySQL_start_record = tk.Checkbutton(self, text="Record to MySQL", font=consts.MYFONTMID,variable=self.var)
+      
       
     def Open_UART_Settings(self):
         uart_settings_window = class_UART_tab.Application_UART_Settings(self)
-        uart_settings_window.create_widgets()
-        uart_settings_window.create_layout()
-        uart_settings_window.create_values()
+
+        
+    def Open_SQL_Settings(self):
+        SQL_window = class_SQL_tab.SQL_TAB(self)
 
     def create_layout(self):
         print("Creating layout")
-        self.myButton_port_settings.grid(row=1, column=0,rowspan=3,padx=10)
+        self.myButton_port_settings.grid(row=0, column=0,rowspan=3,padx=10)
         self.myLabel_COM_status.grid(row=3, column=2,padx=10)
         tk.Label(self, text="").grid(row=2, column=2)
         self.myButton_open_port.grid(row=1, column=2)
+        #sql button
+        self.myButton_SQL_settings.grid(row=2, column=0,rowspan=3,padx=10)
+        self.mySQL_open_status.grid(row=2, column=1,rowspan=3,sticky="w",padx=10)
+        self.mySQL_start_record.grid(row=9, column=2,sticky="w")
         
         self.myText_COM_logs.grid(row=5, column=0, columnspan=5,padx=10)
         self.myButton_clear_logs.grid(row=7,column=0,columnspan=2)
@@ -228,7 +243,13 @@ class Application(tk.Tk):
         pressure = float(splitted_data[1])
         temperature = float(splitted_data[2])
         checksum = splitted_data[3].strip() #remove \r\n end
+        
         SENSOR_DISPLAY_UPDATE(self,temperature,pressure)
+        if self.var.get() == 1:#check button for recording to MySQL
+            SQL_data = {'ID' : consts.table_names[0],
+                        'temp' : temperature,
+                        'pressure' : pressure}
+            DB_Add_Data(self,SQL_data)
       
     def COM_Port_Parse_GPS(self,data):
         #fix,latitude(DMS),NS,longtitude(DMS),EW,UTC+3,satellites,HDOP,checksum
@@ -254,6 +275,18 @@ class Application(tk.Tk):
         self.myGraphIndexArrayGPS = self.myGraphIndexArrayGPS[-consts.GRAPH_SHIFT_SIZE:]
         
         COM_PORT_DISPLAY_UPDATE_GPS(self,GNSS_fix,latitude,NS,longtitude,EW,EET_summer,satellite_count,HDOP_var)
+        if self.var.get() == 1:#check button for recording to MySQL
+            SQL_data = {'ID' : consts.table_names[1],
+                    'FIX' : GNSS_fix,
+                    'LAT' : latitude,
+                    'NS' : NS,
+                    'LONG' : longtitude,
+                    'EW' : EW,
+                    'TIME' : EET_summer,
+                    'SATELL' : satellite_count,
+                    'HDOP' : HDOP_var}
+            DB_Add_Data(self,SQL_data)
+        
         self.Index_gps +=1
       
       
