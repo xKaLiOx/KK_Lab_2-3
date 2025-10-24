@@ -4,6 +4,9 @@ import numpy.lib.recfunctions as rfn
 from tkinter import messagebox
 import class_constants as consts
 
+from openpyxl import load_workbook
+from openpyxl import Workbook
+
 import mysql.connector
 from config import *
 
@@ -73,34 +76,41 @@ def DB_Tables_Check_Create():
     # getting list of tuples, convert to list for tables
     result = np.array(received).flatten().tolist()
     if (set(consts.table_names).issubset(result)) == False:
-        if not consts.table_names[0] in result:
-            table_query = f"CREATE TABLE {consts.table_names[0]} (`ID` int(255) unsigned NOT NULL AUTO_INCREMENT,\
-  `TEMPERATURE` float(5,1) NOT NULL,\
-  `PRESSURE` float(6,1) unsigned NOT NULL,\
-  UNIQUE KEY `UNIQUE_VALUES` (`ID`) USING BTREE\
-) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci"
-            cursor.execute(table_query)
-            # set ID to 1
-            increment_query = f"ALTER TABLE {consts.table_names[0]} AUTO_INCREMENT=1"
-            cursor.execute(increment_query)
         if not consts.table_names[1] in result:
             table_query = f"""CREATE TABLE {consts.table_names[1]} (
-                            `ID` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `ID` bigint(11) unsigned NOT NULL AUTO_INCREMENT,
   `FIX` bit(1) NOT NULL,
   `LATITUDE` double(8,5) NOT NULL,
   `NS` varchar(1) NOT NULL,
   `LONGTITUDE` double(8,5) NOT NULL,
   `EW` varchar(1) NOT NULL,
-  `TIME` int(11) unsigned NOT NULL,
+  `YR_MONTH_DAY` date DEFAULT NULL,
+  `TIME` time DEFAULT NULL,
   `SATELL_CNT` tinyint(3) unsigned NOT NULL,
   `HDOP` float(3,1) unsigned NOT NULL,
-  UNIQUE KEY `Unique_index` (`ID`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"""
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"""
+            cursor.execute(table_query)
+            # set ID to 1
+            increment_query = f"ALTER TABLE {consts.table_names[1]} AUTO_INCREMENT=1"
+            cursor.execute(increment_query)
+            
+        if not consts.table_names[0] in result:
+            table_query = f"""CREATE TABLE {consts.table_names[0]} (
+ `GPS_ID` bigint(11) unsigned NOT NULL,
+  `SUBINDEX_TIME` tinyint(3) unsigned NOT NULL,
+  `TEMPERATURE` float(5,1) NOT NULL,
+  `PRESSURE` float(6,1) unsigned NOT NULL,
+  KEY `GPS_ID` (`GPS_ID`),
+  CONSTRAINT `TIME_LINKING` FOREIGN KEY (`GPS_ID`) REFERENCES `gnss_module` (`ID`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci"""
             cursor.execute(table_query)
             # set ID to 1
             increment_query = f"ALTER TABLE {consts.table_names[0]} AUTO_INCREMENT=1"
             cursor.execute(increment_query)
     DB_connection.commit()
+    cursor.close()
+    DB_connection.close()
 
 
 def DB_Create_Connection(App):
@@ -146,7 +156,9 @@ def DB_Add_Data(App, data: dict):  # brief data is dict
         db_cursor = db_connect.cursor()
 
         if data['ID'] == consts.table_names[0]:  # LPS22HB
-            insert_query = f"""INSERT INTO {data['ID']} (TEMPERATURE, PRESSURE) VALUES(
+            insert_query = f"""INSERT INTO {data['ID']} (GPS_ID,SUBINDEX_TIME,TEMPERATURE, PRESSURE) VALUES(
+'{data['GPS_ID']}',
+'{data['subindex']}',
 '{data['temp']}',
 '{data['pressure']}')"""
             db_cursor.execute(insert_query)
@@ -160,14 +172,38 @@ def DB_Add_Data(App, data: dict):  # brief data is dict
                 '{data['NS']}',
                 {data['LONG']},
                 '{data['EW']}',
+                CURRENT_DATE,
                 {data['TIME']},
                 {data['SATELL']},
                 {data['HDOP']}
             )"""
-            #NS and EW need '', otherwise MySQL not match 0 for auto increment
+            #NS and EW need '', otherwise MySQL not match 0 for auto increment, date YYYYMMDD format for CURRENT_DATE function in MySQL
             db_cursor.execute(insert_query)
             db_connect.commit()
     except Exception as e:
         messagebox.showerror("ERROR", f"Error saving data to MySQL: {e}")
         # turn off saving to SQL
         App.var.set(0)
+
+def saveExcel(Database_tab):
+    try:
+        workbook = Workbook()
+        #GPS
+        sheet = workbook.active
+        sheet.title = "GPS"
+        sheet.delete_rows(idx=2, amount=15)
+        for row_id in Database_tab.myTreeViewGPS.get_children():
+            row = Database_tab.myTreeViewGPS.item(row_id)['values']
+            sheet.append(row)
+        workbook.save(filename='Exported_data.xlsx')
+        #SENSOR
+        sheet=workbook.create_sheet('SENSOR')
+        sheet.delete_rows(idx=2, amount=15)
+        for row_id in Database_tab.myTreeViewSENSOR.get_children():
+            row = Database_tab.myTreeViewSENSOR.item(row_id)['values']
+            sheet.append(row)
+        workbook.save(filename='Exported_data.xlsx')
+        messagebox.showinfo("SUCCESS", "Data has been exported succefully to Exported_data.xlsx")
+    except Exception as e:
+        messagebox.showerror("ERROR", f"Error saving data: {e}")
+    Database_tab.lift()

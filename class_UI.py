@@ -30,7 +30,7 @@ class Application(tk.Tk):
         self.geometry("{}x{}+{}+{}".format(consts.MAIN_WINDOW_WIDTH, consts.MAIN_WINDOW_HEIGHT, 200, 15))
         self.iconbitmap("icon.ico")
         self.resizable(False, False)
-        
+        self.attributes("-topmost", False)
         #global variables
         self.Port_connected = False
         self.Clearing_logs = False
@@ -44,6 +44,7 @@ class Application(tk.Tk):
 
         self.myGraphIndex = 0 #index for graph values
         self.Index_gps = 0
+        self.subindex_time = 0#for linking MySQL values of sensors and GNSS module
         self.myGraphIndexArraySensor = []
         self.myGraphIndexArrayGPS = []
 
@@ -52,6 +53,9 @@ class Application(tk.Tk):
         self.Time_array = []
         self.Lat_array = []
         self.Lon_array = []
+        
+        self.BEFORE_ID_VALUE = 0
+        self.LAST_ID_VALUE = 0
     
     def create_widgets(self):        
         #graph matlab
@@ -106,7 +110,7 @@ class Application(tk.Tk):
                                             ,command=lambda : self.COM_Port_Open_Close())
         
         #widget for SQL settings
-        self.myButton_SQL_settings = tk.Button(self, text="SQL Settings",font=consts.MYFONTMID, command = lambda : self.Open_SQL_Settings(),padx=60)
+        self.myButton_SQL_settings = tk.Button(self, text="Database Viewer",font=consts.MYFONTMID, command = lambda : self.Open_SQL_Settings(),padx=45)
         self.mySQL_open_status = tk.Label(self, background="red", font=consts.MYFONTMID,padx=8)
         
         self.var = tk.IntVar()
@@ -118,7 +122,11 @@ class Application(tk.Tk):
 
         
     def Open_SQL_Settings(self):
-        SQL_window = class_SQL_tab.SQL_TAB(self)
+        #test if it was able to connect to DB at start
+        if(self.mySQL_open_status['background'] == "red"):
+            messagebox.showerror("ERROR","DB wasn't accesed at the start of the program, restart the program and check the warnings")
+        else:
+            SQL_window = class_SQL_tab.SQL_TAB(self)
 
     def create_layout(self):
         print("Creating layout")
@@ -245,12 +253,31 @@ class Application(tk.Tk):
         checksum = splitted_data[3].strip() #remove \r\n end
         
         SENSOR_DISPLAY_UPDATE(self,temperature,pressure)
-        if self.var.get() == 1:#check button for recording to MySQL
+        if self.var.get() == 1:#check button for recording to MySQL ID is foreign key of GNSS module (need to take last value of it)
+            
+            query = f"""SELECT ID FROM {consts.table_names[1]}
+ORDER BY ID DESC
+LIMIT 1"""
+            connection = mysql.connector.connect(**config)
+            cursor = connection.cursor()
+            cursor.execute(query)
+            self.LAST_ID_VALUE = list(cursor.fetchone())[0]#convert from tuple to list to first index value
+            if(self.BEFORE_ID_VALUE != self.LAST_ID_VALUE):
+                self.subindex_time=0
+            
             SQL_data = {'ID' : consts.table_names[0],
+                        'GPS_ID' : self.LAST_ID_VALUE,
+                        'subindex' : self.subindex_time,
                         'temp' : temperature,
                         'pressure' : pressure}
             DB_Add_Data(self,SQL_data)
-      
+            
+
+        self.subindex_time +=1
+        self.subindex_time %=3
+        #self.subindex_time %=3#0th is same time as GNSS, otherwise 0.33 0.66 seconds
+        self.BEFORE_ID_VALUE = self.LAST_ID_VALUE
+        
     def COM_Port_Parse_GPS(self,data):
         #fix,latitude(DMS),NS,longtitude(DMS),EW,UTC+3,satellites,HDOP,checksum
         splitted_data = data.split(',')
