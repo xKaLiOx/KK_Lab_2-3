@@ -25,6 +25,7 @@ INFO/
 __pycache__/
 *.wbk
 *.docx
+*.pdf
 # *.ico
 
 # # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
