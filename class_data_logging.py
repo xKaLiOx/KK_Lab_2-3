@@ -195,14 +195,14 @@ def saveExcel(Database_tab):
         for row_id in Database_tab.myTreeViewGPS.get_children():
             row = Database_tab.myTreeViewGPS.item(row_id)['values']
             sheet.append(row)
-        workbook.save(filename='Exported_data.xlsx')
+        workbook.save(filename=f'EXPORTED_{Database_tab.myComboBox_Date_Select.get()}_F{Database_tab.myComboBox_Time_from.get()}-T{Database_tab.myComboBox_Time_to.get()}.xlsx')
         #SENSOR
         sheet=workbook.create_sheet('SENSOR')
         sheet.delete_rows(idx=2, amount=15)
         for row_id in Database_tab.myTreeViewSENSOR.get_children():
             row = Database_tab.myTreeViewSENSOR.item(row_id)['values']
             sheet.append(row)
-        workbook.save(filename='Exported_data.xlsx')
+        workbook.save(filename=f'EXPORTED_{Database_tab.myComboBox_Date_Select.get()}_F{Database_tab.myComboBox_Time_from.get()}-T{Database_tab.myComboBox_Time_to.get()}.xlsx')
         messagebox.showinfo("SUCCESS", "Data has been exported succefully to Exported_data.xlsx")
     except Exception as e:
         messagebox.showerror("ERROR", f"Error saving data: {e}")

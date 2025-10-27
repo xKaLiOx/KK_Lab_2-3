@@ -33,8 +33,6 @@ class SQL_TAB(tk.Toplevel):
 
         self.myLabel_Date_select = ttk.Label(
             self, text="Select date", font=consts.MYFONTMID)
-        # self.myLabel_Size_select = ttk.Label(
-        #     self, text="Size", font=consts.MYFONTMID)
         self.myComboBox_Date_Select = ttk.Combobox(
             self, state='readonly', font=consts.MYFONTMAIN, width=15)
         self.myComboBox_Date_Select.bind("<<ComboboxSelected>>", self.Database_get_hour_values)
@@ -48,9 +46,6 @@ class SQL_TAB(tk.Toplevel):
         self.myComboBox_Time_to = ttk.Combobox(
             self, state='readonly', font=consts.MYFONTMAIN, width=15)
         
-        self.mySpinbox = ttk.Spinbox(
-            self, from_=0, to=10800, font=consts.MYFONTMAIN, width=15)
-        self.mySpinbox.set(100)
         self.myButton_Data_get = tk.Button(
             self, text="Select", font=consts.MYFONTBIGGEST, command=lambda: self.Database_GPS_get_values())
         self.myButton_Save_data = tk.Button(self,text="Save",font=consts.MYFONTBIGGEST,command=lambda:saveExcel(self))
@@ -75,9 +70,6 @@ class SQL_TAB(tk.Toplevel):
         self.y_scrollbarSENSOR = ttk.Scrollbar(
             self.frame_SENSOR, orient='vertical', command=self.myTreeViewSENSOR.yview)
 
-    def apply_settings(self):
-        print("Applying SQL settings...")
-
     def create_layout(self):
         self.grid_columnconfigure(0, minsize=20)
         self.grid_rowconfigure(0, minsize=20)
@@ -87,8 +79,6 @@ class SQL_TAB(tk.Toplevel):
 
         self.myLabel_Date_select.grid(row=1, column=1)
         self.myComboBox_Date_Select.grid(row=1, column=3)
-        #self.myLabel_Size_select.grid(row=3, column=1)
-        #self.mySpinbox.grid(row=3, column=3)
         self.myButton_Data_get.grid(row=1, rowspan=5, column=5)
         self.myButton_Save_data.grid(row=1,rowspan=5,column=6)
 
@@ -182,7 +172,7 @@ WHERE YR_MONTH_DAY IS NOT NULL"""
             data_query = f"""
     SELECT * FROM {consts.table_names[1]}
     WHERE YR_MONTH_DAY = "{self.myComboBox_Date_Select.get()}" AND HOUR(TIME) BETWEEN {int(self.myComboBox_Time_from.get())} AND {int(self.myComboBox_Time_to.get())}
-    ORDER BY ID DESC
+    ORDER BY ID ASC
             """
             cursor.execute(data_query)
             values = cursor.fetchall()
@@ -209,7 +199,7 @@ WHERE YR_MONTH_DAY IS NOT NULL"""
     FROM {consts.table_names[0]}
     INNER JOIN {consts.table_names[1]} ON {consts.table_names[0]}.GPS_ID = {consts.table_names[1]}.ID
     WHERE {consts.table_names[1]}.YR_MONTH_DAY = "{self.myComboBox_Date_Select.get()}"
-    ORDER BY {consts.table_names[0]}.GPS_ID DESC
+    ORDER BY {consts.table_names[0]}.GPS_ID ASC
             """
             cursor.execute(data_query)
             sensor_values = cursor.fetchall()

@@ -20,11 +20,11 @@
 .history
 .ionide
 
-
 # #my files
-# *.py
-# *.pdf
-# *.docx
+INFO/
+__pycache__/
+*.wbk
+*.docx
 # *.ico
 
 # # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode

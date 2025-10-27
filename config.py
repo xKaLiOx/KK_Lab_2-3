@@ -1,6 +1,4 @@
-
 #config file recommended in MySQL documentation
-import logging
 
 DB_NAME = 'KK_Lab3_DB'
 

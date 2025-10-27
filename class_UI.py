@@ -272,7 +272,6 @@ LIMIT 1"""
                         'pressure' : pressure}
             DB_Add_Data(self,SQL_data)
             
-
         self.subindex_time +=1
         self.subindex_time %=3
         #self.subindex_time %=3#0th is same time as GNSS, otherwise 0.33 0.66 seconds
