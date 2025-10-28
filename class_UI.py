@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 
 import serial
 import serial.tools.list_ports
+from collections import deque
 
 import numpy as np
 from numpy.lib import recfunctions as rfn
@@ -47,6 +48,7 @@ class Application(tk.Tk):
         self.subindex_time = 0#for linking MySQL values of sensors and GNSS module
         self.myGraphIndexArraySensor = []
         self.myGraphIndexArrayGPS = []
+        self.markers = deque()#for popping, it is a FIFO register
 
         self.Temp_array = []
         self.Press_array = []

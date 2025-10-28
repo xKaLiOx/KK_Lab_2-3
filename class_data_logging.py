@@ -33,7 +33,12 @@ def Save_Buffer_Data(App):
 
 def COM_PORT_DISPLAY_UPDATE_GPS(App, GNSS_fix=None, latitude=None, NS=None, longtitude=None, EW=None, EET_summer=None, satellite_count=None, HDOP_var=None):
     if App.Clearing_logs == False:
-        App.myMapWidget.set_marker(float(latitude), float(longtitude))
+        marker = App.myMapWidget.set_marker(float(latitude), float(longtitude))
+        App.markers.append(marker)
+        if len(App.markers) > consts.GRAPH_SHIFT_SIZE:
+            old_marker = App.markers.popleft()
+            old_marker.delete()
+        
         App.myLabel_FIX_status['background'] = "green" if int(
             GNSS_fix) == 1 else "red"
         App.myLabel_time_value['text'] = EET_summer[0:2] + \
